@@ -5,12 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HFC Bank - Premium Gateway</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 🟢 RAZORPAY PAYMENT SCRIPT -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
     <style>
         .fade-in { animation: fadeIn 0.4s ease-in-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .modal-bg { background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); }
-        /* Hide scrollbar for clean UI */
+        /* Hide scrollbar for clean UI but keep functionality */
         ::-webkit-scrollbar { display: none; }
+        .custom-scrollbar::-webkit-scrollbar { display: block; width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
     </style>
 </head>
 <body class="bg-slate-950 text-white font-sans antialiased min-h-screen flex flex-col relative selection:bg-amber-500 selection:text-black">
@@ -75,7 +81,7 @@
                     <span class="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded">Keys for Hotfakes</span>
                 </div>
                 
-                <!-- Dynamic Store Items (Populated via JS) -->
+                <!-- Dynamic Store Items -->
                 <div id="store-items-container" class="space-y-3">
                     <div class="text-center text-sm text-slate-500 py-4">Loading store items...</div>
                 </div>
@@ -84,16 +90,18 @@
 
     </main>
 
-    <!-- MODAL: ADD COINS (Real UPI Payment) -->
+    <!-- 🟢 MODAL: ADD COINS (Razorpay UPI Payment + Custom Input) -->
     <div id="add-coins-modal" class="hidden fixed inset-0 modal-bg z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 fade-in">
-        <div class="bg-slate-900 border border-slate-700 rounded-t-3xl sm:rounded-3xl w-full max-w-sm overflow-hidden relative shadow-2xl">
-            <button onclick="closeAddCoins()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 rounded-full p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            <div class="p-5 border-b border-slate-800">
+        <div class="bg-slate-900 border border-slate-700 rounded-t-3xl sm:rounded-3xl w-full max-w-sm overflow-hidden relative shadow-2xl flex flex-col max-h-[90vh]">
+            <button onclick="closeAddCoins()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 rounded-full p-1 z-10"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            
+            <div class="p-5 border-b border-slate-800 shrink-0">
                 <h3 class="font-black text-lg text-white">Buy HFC Coins</h3>
                 <p class="text-xs text-slate-400">1 Coin = ₹1 INR</p>
             </div>
-            <div class="p-5 space-y-3">
-                <!-- Coin Packages -->
+            
+            <div class="p-5 space-y-3 overflow-y-auto custom-scrollbar">
+                <!-- Fixed Coin Packages -->
                 <button onclick="startUPIPayment(11)" class="w-full flex justify-between items-center bg-slate-800 hover:bg-slate-700 border border-slate-600 p-4 rounded-2xl transition">
                     <div class="flex items-center gap-3"><span class="text-2xl">🪙</span><div class="text-left"><p class="font-bold text-white">11 Coins</p></div></div>
                     <span class="bg-green-500/20 text-green-400 font-bold px-3 py-1 rounded-lg border border-green-500/30">Pay ₹11</span>
@@ -102,10 +110,28 @@
                     <div class="flex items-center gap-3"><span class="text-2xl">🪙</span><div class="text-left"><p class="font-bold text-white">49 Coins</p></div></div>
                     <span class="bg-green-500/20 text-green-400 font-bold px-3 py-1 rounded-lg border border-green-500/30">Pay ₹49</span>
                 </button>
+                
+                <!-- 99 Coins Package (Diamond Removed, Replaced with Coin) -->
                 <button onclick="startUPIPayment(99)" class="w-full flex justify-between items-center bg-slate-800 hover:bg-slate-700 border border-amber-500/50 p-4 rounded-2xl transition shadow-[0_0_10px_rgba(245,158,11,0.1)]">
-                    <div class="flex items-center gap-3"><span class="text-2xl">💎</span><div class="text-left"><p class="font-bold text-amber-400">99 Coins</p><p class="text-[10px] text-amber-500/70">Best for 1 Month</p></div></div>
+                    <div class="flex items-center gap-3"><span class="text-2xl">🪙</span><div class="text-left"><p class="font-bold text-amber-400">99 Coins</p><p class="text-[10px] text-amber-500/70">Best for 1 Month</p></div></div>
                     <span class="bg-amber-500 text-slate-900 font-bold px-3 py-1 rounded-lg">Pay ₹99</span>
                 </button>
+
+                <!-- 🟢 Manual Custom Amount Section -->
+                <div class="mt-4 pt-5 border-t border-slate-700">
+                    <p class="text-sm font-bold text-white mb-2">Custom Amount</p>
+                    <p class="text-xs text-slate-400 mb-3">Minimum buy is 11 Coins.</p>
+                    
+                    <div class="flex gap-2 items-center">
+                        <div class="relative flex-grow">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🪙</span>
+                            <input type="number" id="custom-coin-amount" min="11" placeholder="Enter coins..." class="w-full bg-slate-950 border border-slate-600 rounded-xl pl-9 pr-4 py-3 text-white font-bold focus:outline-none focus:border-amber-500 transition">
+                        </div>
+                        <button onclick="processCustomPayment()" class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-black px-5 py-3 rounded-xl transition whitespace-nowrap shadow-[0_0_10px_rgba(245,158,11,0.2)]">
+                            Pay
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -134,7 +160,7 @@
 
         // ⚠️ Apna Naya Firebase Config Yahan Daalein
         const firebaseConfig = {
-            apiKey: "AIzaSyDuFOfwTplev2IfpCKfiH1ZxCSKuZaftUk", // Dummy key as placeholder
+            apiKey: "AIzaSyDuFOfwTplev2IfpCKfiH1ZxCSKuZaftUk", 
             authDomain: "hfc-bank-e2a34.firebaseapp.com",
             projectId: "hfc-bank-e2a34",
             storageBucket: "hfc-bank-e2a34.firebasestorage.app",
@@ -147,7 +173,7 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // --- Store Products Data (Admin Firebase se fetch kar sakta hai, abhi local setup hai) ---
+        // --- Store Products Data ---
         const storeProducts = [
             { id: "hotfake_1d", title: "Master Key (1 Day)", cost: 11, duration: "1D", icon: "🎟️" },
             { id: "hotfake_7d", title: "Master Key (1 Week)", cost: 49, duration: "7D", icon: "🔥" },
@@ -184,7 +210,6 @@
                     if (docSnap.exists()) {
                         document.getElementById('customer-balance').innerText = docSnap.data().wallet_balance || 0;
                     } else {
-                        // Naya user aaye toh account create karo (0 balance)
                         await setDoc(userRef, { 
                             name: user.displayName, 
                             email: user.email, 
@@ -204,10 +229,10 @@
             }
         });
 
-        // --- Render Store Items Dynamically ---
+        // --- Render Store Items ---
         function renderStoreItems() {
             const container = document.getElementById('store-items-container');
-            container.innerHTML = ""; // Clear loader
+            container.innerHTML = ""; 
 
             storeProducts.forEach(item => {
                 container.innerHTML += `
@@ -227,38 +252,90 @@
             });
         }
 
-        // --- Add Coins / Real UPI Payment Logic (Simulation for Frontend) ---
-        window.openAddCoins = () => document.getElementById('add-coins-modal').classList.remove('hidden');
+        // --- 🟢 Razorpay UI & Logic ---
+        window.openAddCoins = () => {
+            document.getElementById('add-coins-modal').classList.remove('hidden');
+            document.getElementById('custom-coin-amount').value = ""; // clear input
+        };
         window.closeAddCoins = () => document.getElementById('add-coins-modal').classList.add('hidden');
 
-        window.startUPIPayment = async (amountInr) => {
-            // Note: Real application me yahan PhonePe/Razorpay API call hogi.
-            // Hum abhi Firebase mein directly add kar rahe hain (Demo).
-            const user = auth.currentUser;
-            if(!user) return;
+        // Custom manual amount handler
+        window.processCustomPayment = () => {
+            const amount = parseInt(document.getElementById('custom-coin-amount').value);
+            if (isNaN(amount) || amount < 11) {
+                alert("⚠️ Minimum purchase is 11 Coins (₹11).");
+                return;
+            }
+            startUPIPayment(amount); // ₹1 = 1 Coin
+        };
 
-            const isConfirmed = confirm(`You will be redirected to UPI app to pay ₹${amountInr}.\n\n(Click OK to simulate successful payment)`);
-            
-            if(isConfirmed) {
-                try {
-                    const userRef = doc(db, "Users", user.uid);
-                    // Security: Strictly incrementing balance safely.
-                    await runTransaction(db, async (transaction) => {
-                        const sfDoc = await transaction.get(userRef);
-                        if (!sfDoc.exists()) throw "User doc does not exist!";
-                        let newBalance = (sfDoc.data().wallet_balance || 0) + amountInr; // 1 INR = 1 Coin
-                        transaction.update(userRef, { wallet_balance: newBalance });
-                    });
+        // Razorpay API Integration
+        window.startUPIPayment = async (amountInr) => {
+            const user = auth.currentUser;
+            if(!user) return alert("Please login first.");
+
+            // RAZORPAY OPTIONS SETUP
+            var options = {
+                "key": "rzp_test_YOUR_KEY_HERE", // ⚠️ Apna Razorpay Key yahan daalein (Test ya Live)
+                "amount": amountInr * 100, // Razorpay paise mein kaam karta hai (e.g., ₹11 = 1100 paise)
+                "currency": "INR",
+                "name": "HFC Bank",
+                "description": `Buying ${amountInr} 🪙 HFC Coins`,
+                "theme": { "color": "#f59e0b" },
+                
+                // HANDLER: Yeh function TABHI chalega jab payment Successful hogi
+                "handler": async function (response) {
+                    const paymentId = response.razorpay_payment_id;
                     
-                    closeAddCoins();
-                    alert(`✅ Payment Successful! ${amountInr} Coins added via UPI.`);
-                } catch(e) {
-                    alert("Error adding coins: " + e);
+                    try {
+                        // Secure Firebase Transaction to Add Coins
+                        const userRef = doc(db, "Users", user.uid);
+                        await runTransaction(db, async (transaction) => {
+                            const sfDoc = await transaction.get(userRef);
+                            if (!sfDoc.exists()) throw "User doc does not exist!";
+                            
+                            let newBalance = (sfDoc.data().wallet_balance || 0) + amountInr;
+                            transaction.update(userRef, { wallet_balance: newBalance });
+                        });
+                        
+                        closeAddCoins();
+                        alert(`✅ Payment Successful!\n\n${amountInr} Coins added to your Wallet.\nTxn ID: ${paymentId}`);
+                        
+                    } catch(e) {
+                        alert("❌ Payment successful but failed to add coins. Contact Admin with Txn ID: " + paymentId);
+                    }
+                }
+            };
+
+            // OPEN RAZORPAY GATEWAY
+            try {
+                var rzp1 = new Razorpay(options);
+                
+                rzp1.on('payment.failed', function (response){
+                    alert("❌ Payment Failed or Cancelled!\nReason: " + response.error.description);
+                });
+                
+                rzp1.open();
+                
+            } catch(e) {
+                // FALLBACK FOR TESTING (If Razorpay Key is invalid/missing)
+                const isConfirmed = confirm(`[TEST MODE] Razorpay key not setup.\n\nSimulate successful payment of ₹${amountInr}?`);
+                if(isConfirmed) {
+                     try {
+                        const userRef = doc(db, "Users", user.uid);
+                        await runTransaction(db, async (transaction) => {
+                            const sfDoc = await transaction.get(userRef);
+                            let newBalance = (sfDoc.data().wallet_balance || 0) + amountInr;
+                            transaction.update(userRef, { wallet_balance: newBalance });
+                        });
+                        closeAddCoins();
+                        alert(`✅ Demo Payment Successful! ${amountInr} Coins added.`);
+                    } catch(err) { alert("Error: " + err); }
                 }
             }
         };
 
-        // --- Store Purchase Logic (Coins to Key) using HIGH SECURITY Transactions ---
+        // --- Store Purchase Logic (Coins to Key) ---
         window.buyKey = async (itemId, cost, duration) => {
             const user = auth.currentUser;
             if(!user) return;
@@ -268,16 +345,13 @@
             let generatedKey = "";
 
             try {
-                // runTransaction ensures balance checks are hack-proof
                 await runTransaction(db, async (transaction) => {
                     const sfDoc = await transaction.get(userRef);
                     if (!sfDoc.exists()) throw "User not found";
 
                     const currentBalance = sfDoc.data().wallet_balance || 0;
                     
-                    if (currentBalance < cost) {
-                        throw "INSUFFICIENT_FUNDS";
-                    }
+                    if (currentBalance < cost) throw "INSUFFICIENT_FUNDS";
 
                     // Deduct balance
                     const newBalance = currentBalance - cost;
@@ -286,8 +360,6 @@
                     // Generate Unique Code
                     const randomString = Math.random().toString(36).substring(2, 8).toUpperCase();
                     generatedKey = `PASS-${duration}-${randomString}`;
-                    
-                    // (Optional) Here you can also add logic to save this key in a 'Generated_Keys' collection for the main site to verify.
                     purchaseSuccess = true;
                 });
 
@@ -299,7 +371,7 @@
             } catch (e) {
                 if(e === "INSUFFICIENT_FUNDS") {
                     alert("❌ Not enough coins! Please add coins via UPI first.");
-                    openAddCoins(); // Auto-open Add Coins Modal
+                    openAddCoins(); 
                 } else {
                     alert("Error processing transaction: " + e);
                 }
