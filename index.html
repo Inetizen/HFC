@@ -28,10 +28,11 @@
         <div id="login-section" class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
             <h2 class="text-xl font-bold mb-4 text-center">Login to HFC Bank</h2>
             
-            <!-- Admin Email Login -->
+            <!-- 👑 Admin Email Login -->
             <div class="mb-6 space-y-3">
-                <input type="email" id="email" placeholder="Admin Email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-amber-500">
-                <input type="password" id="password" placeholder="Password" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-amber-500">
+                <p class="text-xs text-blue-400 font-semibold mb-1 uppercase tracking-wider">Admin Access</p>
+                <input type="email" id="email" placeholder="Admin Email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500">
+                <input type="password" id="password" placeholder="Password" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500">
                 <button onclick="loginWithEmail()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">Login as Admin</button>
             </div>
 
@@ -41,10 +42,29 @@
                 <div class="flex-grow border-t border-slate-700"></div>
             </div>
 
-            <!-- Customer Guest Login -->
-            <button onclick="loginAsGuest()" class="w-full mt-4 bg-amber-500 text-slate-900 font-bold py-3 px-4 rounded-xl flex items-center justify-center space-x-2 hover:bg-amber-400 transition">
-                <span>Enter as Guest (Customer)</span>
-            </button>
+            <!-- 👤 Customer Phone Login -->
+            <div class="mt-4 space-y-3">
+                <p class="text-xs text-amber-400 font-semibold mb-1 uppercase tracking-wider">Customer Access (OTP)</p>
+                
+                <!-- Phone Number Input & Send OTP -->
+                <div id="phone-input-group" class="flex flex-col space-y-3">
+                    <input type="tel" id="phone-number" placeholder="+919876543210" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-amber-500">
+                    <!-- Firebase Recaptcha Container (Required for Security) -->
+                    <div id="recaptcha-container" class="flex justify-center"></div>
+                    <button id="send-otp-btn" onclick="sendOTP()" class="w-full bg-amber-500 text-slate-900 font-bold py-3 px-4 rounded-xl hover:bg-amber-400 transition shadow">
+                        Send OTP
+                    </button>
+                </div>
+
+                <!-- OTP Input & Verify (Hidden by default) -->
+                <div id="otp-input-group" class="hidden flex flex-col space-y-3">
+                    <p class="text-xs text-green-400 text-center">OTP sent successfully!</p>
+                    <input type="text" id="otp-code" placeholder="Enter 6-digit OTP" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-center tracking-widest text-lg font-bold focus:outline-none focus:border-green-500">
+                    <button onclick="verifyOTP()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl transition shadow">
+                        Verify & Login
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- 2. CUSTOMER DASHBOARD -->
@@ -55,10 +75,10 @@
                     <span id="customer-balance" class="text-5xl font-black">0</span>
                     <span class="text-2xl font-bold">🪙</span>
                 </div>
-                <p class="text-xs mt-4 opacity-90">Use coins to unlock premium videos!</p>
+                <p class="text-xs mt-4 opacity-90 font-medium">Use coins to unlock premium videos!</p>
             </div>
             
-            <button class="w-full bg-slate-800 border border-slate-700 p-4 rounded-xl text-amber-400 font-bold hover:bg-slate-700 transition">
+            <button class="w-full bg-slate-800 border border-slate-700 p-4 rounded-xl text-amber-400 font-bold hover:bg-slate-700 transition shadow-lg">
                 + Add More Coins (UPI)
             </button>
         </div>
@@ -70,11 +90,11 @@
                     <span>👑 Admin Control Panel</span>
                 </h3>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-slate-900 p-4 rounded-lg text-center">
+                    <div class="bg-slate-900 p-4 rounded-lg text-center border border-slate-700">
                         <p class="text-xs text-slate-400">Total Users</p>
                         <p class="text-xl font-bold text-white">Active</p>
                     </div>
-                    <div class="bg-slate-900 p-4 rounded-lg text-center">
+                    <div class="bg-slate-900 p-4 rounded-lg text-center border border-slate-700">
                         <p class="text-xs text-slate-400">System Status</p>
                         <p class="text-xl font-bold text-green-400">Online</p>
                     </div>
@@ -87,7 +107,7 @@
     <!-- FIREBASE LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signInWithPhoneNumber, RecaptchaVerifier, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // Aapki Firebase Config Keys
@@ -105,22 +125,85 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- LOGIN FUNCTIONS ---
-        window.loginAsGuest = async () => {
-            try { await signInAnonymously(auth); } 
-            catch (error) { alert("Guest login failed: " + error.message); }
-        };
-
+        // --- EMAIL LOGIN (ADMIN) ---
         window.loginWithEmail = async () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            try { await signInWithEmailAndPassword(auth, email, password); } 
-            catch (error) { alert("Admin login failed. Incorrect details."); }
+            if(!email || !password) return alert("Email and Password daalein");
+            try { 
+                await signInWithEmailAndPassword(auth, email, password); 
+            } catch (error) { 
+                alert("Admin login failed. Incorrect details."); 
+            }
         };
 
-        window.logout = async () => { await signOut(auth); };
+        // --- PHONE LOGIN (CUSTOMER) ---
+        
+        // 1. Initialize Recaptcha (Required for SMS)
+        function initRecaptcha() {
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'normal',
+                    'callback': (response) => {
+                        // reCAPTCHA solved
+                    }
+                });
+            }
+        }
 
-        // --- ROUTING LOGIC (Admin vs Customer) ---
+        // 2. Send OTP
+        window.sendOTP = async () => {
+            const phoneNumber = document.getElementById('phone-number').value;
+            // Number check (+91 zaruri hai)
+            if(!phoneNumber.startsWith('+') || phoneNumber.length < 11){
+                alert("Country code ke sath valid number daalein (Example: +919876543210)");
+                return;
+            }
+
+            initRecaptcha();
+            const appVerifier = window.recaptchaVerifier;
+
+            try {
+                const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+                window.confirmationResult = confirmationResult;
+                
+                // UI change: Hide phone input, show OTP input
+                document.getElementById('phone-input-group').classList.add('hidden');
+                document.getElementById('otp-input-group').classList.remove('hidden');
+            } catch (error) {
+                console.error(error);
+                alert("OTP bhejne me problem aayi. Try again.");
+                if(window.recaptchaVerifier) {
+                    window.recaptchaVerifier.clear();
+                    window.recaptchaVerifier = null;
+                }
+            }
+        };
+
+        // 3. Verify OTP
+        window.verifyOTP = async () => {
+            const code = document.getElementById('otp-code').value;
+            if(code.length !== 6) return alert("6-digit OTP daalein");
+            
+            try {
+                await window.confirmationResult.confirm(code);
+                // Login successful! onAuthStateChanged trigger ho jayega automatically
+            } catch (error) {
+                alert("Galat OTP! Wapas try karein.");
+            }
+        };
+
+        // --- LOGOUT ---
+        window.logout = async () => { 
+            await signOut(auth); 
+            // Reset OTP UI on logout
+            document.getElementById('phone-input-group').classList.remove('hidden');
+            document.getElementById('otp-input-group').classList.add('hidden');
+            document.getElementById('phone-number').value = '';
+            document.getElementById('otp-code').value = '';
+        };
+
+        // --- ROUTING LOGIC (Admin vs Customer Database Check) ---
         onAuthStateChanged(auth, async (user) => {
             const loginSec = document.getElementById('login-section');
             const custDash = document.getElementById('customer-dashboard');
@@ -138,14 +221,14 @@
                 if (userSnap.exists()) {
                     const userData = userSnap.data();
                     
-                    // Admin View
+                    // 👑 Admin View
                     if (userData.role === "admin") {
                         roleBadge.innerText = "Admin";
                         roleBadge.className = "text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-semibold";
                         adminDash.classList.remove('hidden');
                         custDash.classList.add('hidden');
                     } 
-                    // Customer View
+                    // 👤 Customer View
                     else {
                         roleBadge.innerText = "Customer";
                         roleBadge.className = "text-xs bg-amber-500 text-slate-900 px-2 py-0.5 rounded-full font-semibold";
@@ -154,14 +237,17 @@
                         document.getElementById('customer-balance').innerText = userData.wallet_balance || 0;
                     }
                 } else {
-                    // New Guest Account Creation
+                    // New Phone Account Creation (Customer)
                     await setDoc(userRef, {
+                        phone: user.phoneNumber,
                         role: "customer",
-                        wallet_balance: 1, // Signup bonus
+                        wallet_balance: 1, // 1 Coin Signup bonus
                         joined: new Date().toISOString()
                     });
                     roleBadge.innerText = "New Customer";
+                    roleBadge.className = "text-xs bg-amber-500 text-slate-900 px-2 py-0.5 rounded-full font-semibold";
                     custDash.classList.remove('hidden');
+                    adminDash.classList.add('hidden');
                     document.getElementById('customer-balance').innerText = "1";
                 }
             } else {
