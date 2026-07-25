@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HFC Secure Checkout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); }
+        .loader { border: 4px solid #333; border-top: 4px solid #f59e0b; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="text-white font-sans flex items-center justify-center min-h-screen p-4">
+
+    <!-- CHECKOUT BOX -->
+    <div class="bg-slate-900 border border-amber-500/50 p-6 rounded-3xl shadow-[0_0_30px_rgba(245,158,11,0.2)] w-full max-w-sm text-center">
+        <h2 class="text-xl font-black text-amber-500 mb-1">🏦 HFC Checkout</h2>
+        <p class="text-xs text-slate-400 mb-6 border-b border-slate-700 pb-4">Secure Payment Gateway</p>
+        
+        <!-- Item Details -->
+        <div class="bg-slate-800 p-4 rounded-xl mb-6 flex justify-between items-center border border-slate-700">
+            <div class="text-left">
+                <p class="text-xs text-slate-400">Paying for:</p>
+                <p id="item-name" class="font-bold text-white text-sm">Loading...</p>
+            </div>
+            <div class="text-right">
+                <p class="text-2xl font-black text-amber-400" id="item-price">...</p>
+            </div>
+        </div>
+
+        <!-- Dynamic Action Area -->
+        <div id="action-area" class="min-h-[100px] flex flex-col items-center justify-center">
+            <div class="loader"></div>
+            <p class="text-xs text-slate-400 mt-3">Connecting to HFC Bank...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // ⚠️ Apna Firebase Config dalein
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuFOfwTplev2IfpCKfiH1ZxCSKuZaftUk", 
+            authDomain: "hfc-bank-e2a34.firebaseapp.com",
+            projectId: "hfc-bank-e2a34"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        const storeProducts = {
+            "hotfake_1d": { title: "Master Key (1 Day)", cost: 11, duration: "1D" },
+            "hotfake_7d": { title: "Master Key (1 Week)", cost: 49, duration: "7D" },
+            "hotfake_30d": { title: "Master Key (1 Month)", cost: 99, duration: "30D" }
+        };
+
+        // Get Item ID from URL (e.g., ?item=hotfake_30d)
+        const urlParams = new URLSearchParams(window.location.search);
+        const itemId = urlParams.get('item');
+        const item = storeProducts[itemId];
+
+        if (!item) {
+            document.getElementById('action-area').innerHTML = `<p class="text-red-500 font-bold">❌ Invalid Product</p>`;
+            document.getElementById('item-name').innerText = "Unknown";
+        } else {
+            document.getElementById('item-name').innerText = item.title;
+            document.getElementById('item-price').innerText = item.cost + " 🪙";
+            checkUserState();
+        }
+
+        // State Management
+        let currentUser = null;
+        let currentBalance = 0;
+
+        function checkUserState() {
+            onAuthStateChanged(auth, async (user) => {
+                const actionArea = document.getElementById('action-area');
+                if (user) {
+                    currentUser = user;
+                    const userRef = doc(db, "Users", user.uid);
+                    onSnapshot(userRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            currentBalance = docSnap.data().wallet_balance || 0;
+                            renderPaymentUI();
+                        } else {
+                            setDoc(userRef, { email: user.email, wallet_balance: 0, role: "customer" });
+                        }
+                    });
+                } else {
+                    currentUser = null;
+                    actionArea.innerHTML = `
+                        <button id="login-btn" class="w-full bg-white text-black font-bold py-3 rounded-xl flex justify-center gap-2 items-center hover:bg-gray-200">
+                            <span class="text-xl">G</span> Login with Google to Pay
+                        </button>`;
+                    document.getElementById('login-btn').onclick = () => signInWithPopup(auth, provider);
+                }
+            });
+        }
+
+        function renderPaymentUI() {
+            const actionArea = document.getElementById('action-area');
+            const shortfall = item.cost - currentBalance;
+
+            if (currentBalance >= item.cost) {
+                actionArea.innerHTML = `
+                    <p class="text-sm text-slate-300 mb-3">Wallet Balance: <span class="font-bold text-green-400">${currentBalance} 🪙</span></p>
+                    <button id="pay-hfc-btn" class="w-full bg-amber-500 text-black font-black py-4 rounded-xl shadow-lg hover:bg-amber-400">Pay ${item.cost} 🪙 Securely</button>
+                `;
+                document.getElementById('pay-hfc-btn').onclick = processHFCPayment;
+            } else {
+                actionArea.innerHTML = `
+                    <p class="text-sm text-slate-300 mb-1">Wallet Balance: <span class="font-bold text-red-400">${currentBalance} 🪙</span></p>
+                    <p class="text-xs text-amber-500 mb-3">You need ${shortfall} more coins.</p>
+                    <button id="recharge-btn" class="w-full bg-slate-700 text-white border border-slate-500 font-bold py-3 rounded-xl hover:bg-slate-600">Recharge ${shortfall} Coins (₹${shortfall})</button>
+                `;
+                document.getElementById('recharge-btn').onclick = () => processUPI(shortfall);
+            }
+        }
+
+        async function processUPI(amount) {
+            document.getElementById('action-area').innerHTML = `<div class="loader"></div><p class="text-xs mt-2">Waiting for UPI...</p>`;
+            
+            // ⚠️ RAZORPAY CODE HERE
+            var options = {
+                "key": "rzp_test_YOUR_KEY_HERE",
+                "amount": amount * 100, 
+                "currency": "INR",
+                "name": "HFC Bank Recharge",
+                "handler": async function (response) {
+                    try {
+                        await runTransaction(db, async (t) => {
+                            const ref = doc(db, "Users", currentUser.uid);
+                            const docSnap = await t.get(ref);
+                            t.update(ref, { wallet_balance: (docSnap.data().wallet_balance || 0) + amount });
+                        });
+                        alert("Recharge Success! Now processing your payment...");
+                    } catch(e) { alert("Recharge failed updating db."); }
+                }
+            };
+            
+            try { 
+                var rzp1 = new Razorpay(options); 
+                rzp1.on('payment.failed', () => renderPaymentUI());
+                rzp1.open(); 
+            } catch(e) {
+                // TEST MODE FALLBACK
+                if(confirm(`[TEST] Simulate paying ₹${amount}?`)) {
+                    await runTransaction(db, async (t) => {
+                        const ref = doc(db, "Users", currentUser.uid);
+                        const docSnap = await t.get(ref);
+                        t.update(ref, { wallet_balance: (docSnap.data().wallet_balance || 0) + amount });
+                    });
+                } else { renderPaymentUI(); }
+            }
+        }
+
+        async function processHFCPayment() {
+            document.getElementById('action-area').innerHTML = `<div class="loader"></div><p class="text-xs mt-2 text-green-400">Processing...</p>`;
+            try {
+                let generatedKey = "";
+                await runTransaction(db, async (t) => {
+                    const userRef = doc(db, "Users", currentUser.uid);
+                    const userDoc = await t.get(userRef);
+                    if (userDoc.data().wallet_balance < item.cost) throw "FUNDS";
+                    
+                    t.update(userRef, { wallet_balance: userDoc.data().wallet_balance - item.cost });
+                    
+                    const randomString = Math.random().toString(36).substring(2, 8).toUpperCase();
+                    generatedKey = `PASS-${item.duration}-${randomString}`;
+                    
+                    const keyRef = doc(db, "Active_Keys", generatedKey);
+                    t.set(keyRef, { duration: item.duration, status: "active", createdBy: currentUser.uid });
+                });
+
+                // PAYMENT SUCCESS! Send Key to Main Website & Close Popup
+                document.getElementById('action-area').innerHTML = `<p class="text-xl">✅</p><p class="text-sm font-bold text-green-400">Success! Unlocking...</p>`;
+                
+                setTimeout(() => {
+                    window.opener.postMessage({ status: "success", key: generatedKey }, "*");
+                    window.close(); // Popup band ho jayega
+                }, 1500);
+
+            } catch(e) { alert("Transaction Failed!"); renderPaymentUI(); }
+        }
+    </script>
+</body>
+</html>
+
