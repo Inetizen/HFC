@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HFC Store - Premium Digital Assets</title>
     <style>
-        /* CSS: Premium Dark Theme Design */
+        /* Premium Dark Theme Design */
         * {
             margin: 0;
             padding: 0;
@@ -24,7 +24,7 @@
         }
         h1 {
             color: #ffd700;
-            font-size: 24px;
+            font-size: 26px;
         }
         .container {
             max-width: 800px;
@@ -70,6 +70,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
+            justify-content: center;
         }
         .card {
             background-color: #1a1a1a;
@@ -101,11 +102,12 @@
             border-radius: 5px;
             font-weight: bold;
             cursor: pointer;
+            font-size: 16px;
         }
         .buy-btn:hover {
             background-color: #ffea00;
         }
-        /* Manage Wallet Section */
+        /* Input & Wallet Styling */
         .input-group {
             display: flex;
             gap: 10px;
@@ -118,6 +120,7 @@
             border: 1px solid #444;
             color: #fff;
             border-radius: 5px;
+            font-size: 16px;
         }
         .action-btn {
             background-color: #00a8ff;
@@ -127,174 +130,206 @@
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 16px;
         }
-        /* Payment Modal Styling */
-        #paymentModal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: #1a1a1a;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-            border: 1px solid #ffd700;
-        }
-        .qr-placeholder {
-            width: 200px;
-            height: 200px;
-            background-color: #333;
-            margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #888;
-            border-radius: 10px;
+        /* Pass Generator Box */
+        .pass-box {
+            display: none; /* Hidden by default, shown by JS */
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #444;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>🪙 HFC Store</h1>
+        <h1>🪙 HFC Store 💰</h1>
         <p>Premium Digital Gaming Coins</p>
     </header>
 
     <div class="container">
         <!-- Tabs -->
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('buy')">🛒 Buy HFC Coins</button>
-            <button class="tab-btn" onclick="switchTab('manage')">💳 Manage My Wallet</button>
+            <button class="tab-btn active" onclick="switchTab('buy')">🛒 Buy Coins</button>
+            <button class="tab-btn" onclick="switchTab('manage')">🎟️ Redeem Code</button>
         </div>
 
         <!-- Section 1: Buy Coins -->
         <div id="buy" class="section active">
             <div class="cards-container">
                 <div class="card">
-                    <h3>Starter Pack</h3>
-                    <p>30 HFC Coins</p>
-                    <div class="price">₹29</div>
-                    <button class="buy-btn" onclick="openPayment(29, 30)">Buy Now</button>
+                    <h3>1-Day Plan</h3>
+                    <p>1 🪙 HFC Coin</p>
+                    <div class="price">₹19</div>
+                    <button class="buy-btn" onclick="alert('Payment Gateway UI will open here. UPI ID: admin@upi')">Buy Now</button>
                 </div>
                 <div class="card">
-                    <h3>Pro Pack</h3>
-                    <p>80 HFC Coins</p>
+                    <h3>7-Day Plan</h3>
+                    <p>7 🪙 HFC Coins</p>
                     <div class="price">₹49</div>
-                    <button class="buy-btn" onclick="openPayment(49, 80)">Buy Now</button>
+                    <button class="buy-btn" onclick="alert('Payment Gateway UI will open here. UPI ID: admin@upi')">Buy Now</button>
                 </div>
                 <div class="card">
-                    <h3>VIP Pack</h3>
-                    <p>200 HFC Coins</p>
+                    <h3>30-Day Plan</h3>
+                    <p>30 🪙 HFC Coins</p>
                     <div class="price">₹99</div>
-                    <button class="buy-btn" onclick="openPayment(99, 200)">Buy Now</button>
+                    <button class="buy-btn" onclick="alert('Payment Gateway UI will open here. UPI ID: admin@upi')">Buy Now</button>
                 </div>
+            </div>
+            
+            <!-- Demo codes helper for testing -->
+            <div style="margin-top: 40px; padding: 15px; background: #1a1a1a; font-size: 12px; color: #888;">
+                <p><b>[ Developer Note - Use these codes to test the Redeem Tab ]</b></p>
+                <p>1-Day Test Code: <b>WALLET-1D-DEMO</b></p>
+                <p>7-Day Test Code: <b>WALLET-7D-DEMO</b></p>
+                <p>30-Day Test Code: <b>WALLET-30D-DEMO</b></p>
             </div>
         </div>
 
-        <!-- Section 2: Manage Wallet -->
+        <!-- Section 2: Redeem Code -->
         <div id="manage" class="section">
-            <h2 style="margin-bottom: 15px; color: #ffd700;">Access Your Wallet</h2>
+            <h2 style="margin-bottom: 15px; color: #ffd700;">Redeem Your Code</h2>
             <div class="input-group">
-                <input type="text" id="walletCode" placeholder="Enter your WALLET-XXXX code...">
-                <button class="action-btn" onclick="checkWallet()">Access</button>
+                <input type="text" id="walletCode" placeholder="Enter your Code here...">
+                <button class="action-btn" onclick="checkWallet()">Verify</button>
             </div>
             
-            <!-- Hidden Dashboard (Shows after entering code) -->
+            <!-- Dashboard (Shows after entering code) -->
             <div id="walletDashboard" style="display: none; background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333;">
-                <h3 style="color: #00e676; margin-bottom: 20px;">🟢 Balance: <span id="coinBalance">0</span> Coins</h3>
+                <h3 style="color: #00e676; margin-bottom: 20px;">🟢 Available Balance: <span id="coinBalance">0</span> 🪙</h3>
                 
-                <h4 style="margin-bottom: 10px;">Generate Access Pass:</h4>
-                <div class="cards-container">
-                    <div class="card" style="padding: 15px;">
-                        <h4>1-Day Pass</h4>
-                        <p style="color: #aaa; margin: 10px 0;">Cost: 1 Coin</p>
-                        <button class="buy-btn" onclick="generatePass(1)">Generate</button>
-                    </div>
-                    <div class="card" style="padding: 15px;">
-                        <h4>7-Day Pass</h4>
-                        <p style="color: #aaa; margin: 10px 0;">Cost: 7 Coins</p>
-                        <button class="buy-btn" onclick="generatePass(7)">Generate</button>
-                    </div>
+                <h4 style="margin-bottom: 10px;" id="passMessage">Generate Your Access Pass:</h4>
+                
+                <!-- Dynamic Buttons (Only one will show based on plan) -->
+                <div id="btn-1d" class="pass-box">
+                    <h4>🎟️ 1-Day Pass</h4>
+                    <p style="color: #aaa; margin: 10px 0;">Cost: 1 🪙</p>
+                    <button class="buy-btn" onclick="generatePass(1, '1D')">Generate Pass</button>
+                </div>
+                
+                <div id="btn-7d" class="pass-box">
+                    <h4>🎟️ 7-Day Pass</h4>
+                    <p style="color: #aaa; margin: 10px 0;">Cost: 7 🪙</p>
+                    <button class="buy-btn" onclick="generatePass(7, '7D')">Generate Pass</button>
+                </div>
+                
+                <div id="btn-30d" class="pass-box">
+                    <h4>🎟️ 30-Day Pass</h4>
+                    <p style="color: #aaa; margin: 10px 0;">Cost: 30 🪙</p>
+                    <button class="buy-btn" onclick="generatePass(30, '30D')">Generate Pass</button>
+                </div>
+                
+                <!-- Output for Final Code -->
+                <div id="finalCodeBox" style="display: none; margin-top: 20px; padding: 15px; background: #000; border: 1px dashed #00e676; color: #00e676; text-align: center; font-size: 18px; font-weight: bold;">
+                    Your Code: <span id="finalPassCode"></span>
+                    <p style="font-size: 12px; color: #fff; margin-top: 5px; font-weight: normal;">(Use this on the main site. It will auto-delete when expired.)</p>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Payment Modal (Hidden by default) -->
-    <div id="paymentModal">
-        <div class="modal-content">
-            <h2 style="color: #ffd700; margin-bottom: 10px;">Pay via UPI</h2>
-            <p>Scan to pay ₹<span id="payAmount"></span> for <span id="payCoins"></span> Coins</p>
-            
-            <div class="qr-placeholder">
-                [ QR Code Image Here ]
-            </div>
-            
-            <p style="margin-bottom: 10px;">UPI ID: admin@paytm</p>
-            
-            <div class="input-group" style="margin-top: 20px;">
-                <input type="text" id="utrNumber" placeholder="Enter 12-Digit UTR Number">
-            </div>
-            <button class="buy-btn" onclick="submitUTR()">Verify Payment</button>
-            <button style="background: transparent; border: none; color: #aaa; margin-top: 15px; cursor: pointer;" onclick="closePayment()">Cancel</button>
         </div>
     </div>
 
     <script>
-        // JS: Basic Logic & Interactions
+        // ---------------------------------------------------------
+        // 🎛️ ADMIN SETTINGS (Ready to connect with Firebase later)
+        // ---------------------------------------------------------
+        const adminSettings = {
+            upi_id: "admin@paytm",
+            prices: {
+                "1D": 19,
+                "7D": 49,
+                "30D": 99
+            }
+        };
 
-        // Tab Switching Logic
+        // ---------------------------------------------------------
+        // 📂 MOCK FIREBASE DATABASE (For testing)
+        // ---------------------------------------------------------
+        let database = {
+            "WALLET-1D-DEMO": { coins: 1, type: "1D", used: false },
+            "WALLET-7D-DEMO": { coins: 7, type: "7D", used: false },
+            "WALLET-30D-DEMO": { coins: 30, type: "30D", used: false }
+        };
+
+        let currentActiveWallet = null;
+
+        // --- Tab Switching Logic ---
         function switchTab(tabId) {
             document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            
             document.getElementById(tabId).classList.add('active');
             event.target.classList.add('active');
         }
 
-        // Payment Modal Logic
-        function openPayment(price, coins) {
-            document.getElementById('payAmount').innerText = price;
-            document.getElementById('payCoins').innerText = coins;
-            document.getElementById('paymentModal').style.display = 'flex';
-        }
-
-        function closePayment() {
-            document.getElementById('paymentModal').style.display = 'none';
-        }
-
-        function submitUTR() {
-            const utr = document.getElementById('utrNumber').value;
-            if(utr.length < 12) {
-                alert("Please enter a valid 12-digit UTR number!");
-                return;
-            }
-            // Future: Here we will connect Firebase to check UTR via MacroDroid
-            alert("Payment Verified! Your Master Wallet Code is: WALLET-X9K2-30C\n\nPlease save this code!");
-            closePayment();
-        }
-
-        // Wallet Logic
+        // --- Check Wallet Logic ---
         function checkWallet() {
-            const code = document.getElementById('walletCode').value;
-            if(code === "") {
-                alert("Please enter a wallet code.");
+            const code = document.getElementById('walletCode').value.trim();
+            const dbRecord = database[code]; // Check if code exists in our fake DB
+
+            if (!dbRecord) {
+                alert("❌ Invalid Code! Please check again.");
                 return;
             }
-            // Future: Here Firebase will check if code exists and fetch balance
-            document.getElementById('coinBalance').innerText = "30";
+
+            if (dbRecord.used === true) {
+                alert("⚠️ This Code is empty. Coins have already been redeemed!");
+                return;
+            }
+
+            // Wallet found & valid
+            currentActiveWallet = code;
+            
+            // Show Dashboard & Update Balance
             document.getElementById('walletDashboard').style.display = "block";
+            document.getElementById('coinBalance').innerText = dbRecord.coins;
+            
+            // Hide all pass generator boxes first
+            document.getElementById('btn-1d').style.display = "none";
+            document.getElementById('btn-7d').style.display = "none";
+            document.getElementById('btn-30d').style.display = "none";
+            document.getElementById('finalCodeBox').style.display = "none";
+            document.getElementById('passMessage').style.display = "block";
+
+            // SMART LOGIC: Show ONLY the button that matches the user's plan
+            if (dbRecord.type === "1D") {
+                document.getElementById('btn-1d').style.display = "block";
+            } else if (dbRecord.type === "7D") {
+                document.getElementById('btn-7d').style.display = "block";
+            } else if (dbRecord.type === "30D") {
+                document.getElementById('btn-30d').style.display = "block";
+            }
         }
 
-        function generatePass(cost) {
-            // Future: Firebase will deduct balance and return Pass Code
-            alert("Success! 1 Coin deducted. \n\nYour Access Code is: PASS-1D-A8B9\n\nUse this on the main site.");
+        // --- Generate Final Pass Logic ---
+        function generatePass(cost, planType) {
+            const dbRecord = database[currentActiveWallet];
+
+            if (dbRecord.coins < cost) {
+                alert("Not enough coins!");
+                return;
+            }
+
+            // Deduct Coins & Mark as used
+            dbRecord.coins = 0;
+            dbRecord.used = true;
+
+            // Generate a random final code (e.g., PASS-30D-X8A2)
+            const randomString = Math.random().toString(36).substring(2, 6).toUpperCase();
+            const finalPass = `PASS-${planType}-${randomString}`;
+
+            // Update UI
+            document.getElementById('coinBalance').innerText = "0";
+            
+            // Hide the generate button and show the final code
+            document.getElementById(`btn-${planType.toLowerCase()}`).style.display = "none";
+            document.getElementById('passMessage').style.display = "none";
+            
+            document.getElementById('finalCodeBox').style.display = "block";
+            document.getElementById('finalPassCode').innerText = finalPass;
+
+            alert("✅ Pass Generated Successfully! Balance is now 0 🪙.");
         }
     </script>
 </body>
