@@ -1,0 +1,44 @@
+// Bank System: User login hote hi Database check karna
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // Firestore Database se user ka data nikalo
+        const userRef = doc(db, "Users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+            const userData = userSnap.data();
+
+            // 👑 ADMIN LOGIN CHECK
+            if (userData.role === "admin") {
+                console.log("Admin logged in!");
+                // Yahan Admin Dashboard show karne ka code aayega
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('admin-dashboard').classList.remove('hidden'); 
+                
+            } 
+            // 👤 CUSTOMER LOGIN CHECK
+            else {
+                console.log("Customer logged in!");
+                // Yahan normal Wallet Dashboard show karne ka code aayega
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('customer-dashboard').classList.remove('hidden');
+                document.getElementById('wallet-balance').innerText = userData.wallet_balance;
+            }
+        } else {
+            // Agar account pehli baar ban raha hai (New Customer)
+            await setDoc(userRef, {
+                email: user.email || "No Email",
+                phone: user.phoneNumber || "Guest",
+                wallet_balance: 1,
+                role: "customer", // <--- Naye user ko hamesha 'customer' role do
+                joined_date: new Date().toISOString()
+            });
+            console.log("New Customer Account Created!");
+        }
+    } else {
+        // Logout state
+        document.getElementById('login-section').classList.remove('hidden');
+        document.getElementById('admin-dashboard').classList.add('hidden');
+        document.getElementById('customer-dashboard').classList.add('hidden');
+    }
+});
