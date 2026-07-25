@@ -8,7 +8,6 @@
     <style>
         .fade-in { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* Modal background */
         .modal-bg { background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); }
     </style>
 </head>
@@ -59,7 +58,6 @@
 
         <!-- DASHBOARD SECTION -->
         <div id="customer-dashboard" class="hidden space-y-5 fade-in">
-            <!-- Wallet Card -->
             <div class="relative overflow-hidden bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-8 rounded-3xl shadow-[0_10px_40px_rgba(245,158,11,0.2)] text-slate-950 text-center">
                 <p class="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">Available Balance</p>
                 <div class="flex justify-center items-center space-x-2">
@@ -69,7 +67,6 @@
                 <p class="text-sm mt-4 font-semibold bg-black/10 inline-block px-4 py-1.5 rounded-full">Use coins to unlock premium content</p>
             </div>
             
-            <!-- Open Store Button -->
             <button onclick="openStore()" class="w-full bg-slate-900 border border-amber-500/50 p-4 rounded-2xl text-amber-400 font-bold hover:bg-slate-800 transition shadow-[0_0_15px_rgba(245,158,11,0.2)] flex justify-center items-center space-x-2">
                 <span class="text-xl">🛒</span><span>Buy More Coins</span>
             </button>
@@ -91,7 +88,6 @@
             </div>
 
             <div class="p-6 space-y-4">
-                <!-- Package 1 -->
                 <button onclick="processPayment(10, 50)" class="w-full flex justify-between items-center bg-slate-800 hover:bg-slate-700 border border-slate-600 p-4 rounded-xl transition group">
                     <div class="flex items-center space-x-3">
                         <span class="text-2xl group-hover:scale-110 transition">🪙</span>
@@ -103,7 +99,6 @@
                     <span class="bg-green-500/20 text-green-400 font-bold px-3 py-1.5 rounded-lg border border-green-500/30">₹50</span>
                 </button>
 
-                <!-- Package 2 -->
                 <button onclick="processPayment(50, 200)" class="w-full flex justify-between items-center bg-slate-800 hover:bg-slate-700 border border-amber-500/50 p-4 rounded-xl transition group shadow-[0_0_10px_rgba(245,158,11,0.1)]">
                     <div class="flex items-center space-x-3">
                         <span class="text-2xl group-hover:scale-110 transition">💎</span>
@@ -116,7 +111,6 @@
                 </button>
             </div>
 
-            <!-- Fake Processing Screen -->
             <div id="processing-screen" class="hidden absolute inset-0 bg-slate-900 flex flex-col items-center justify-center p-6 text-center">
                 <div class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4"></div>
                 <h4 class="font-bold text-lg mb-1 text-white">Processing UPI Payment...</h4>
@@ -127,7 +121,6 @@
 
     <!-- FIREBASE LOGIC -->
     <script type="module">
-        // Import updateDoc and increment for real-time balance updates
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -146,13 +139,11 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // Authenticaton Functions
         window.loginWithGoogle = async () => { try { await signInWithPopup(auth, provider); } catch(e) { alert(e.message); } };
         window.loginEmail = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('cust-email').value, document.getElementById('cust-password').value); } catch(e) { alert("Invalid details"); } };
         window.signupEmail = async () => { try { await createUserWithEmailAndPassword(auth, document.getElementById('cust-email').value, document.getElementById('cust-password').value); } catch(e) { alert(e.message); } };
         window.logout = async () => { await signOut(auth); };
 
-        // Real-time Database Listener
         let unsubscribe = null;
 
         onAuthStateChanged(auth, async (user) => {
@@ -163,26 +154,22 @@
             if (user) {
                 const userRef = doc(db, "Users", user.uid);
                 
-                // Set up real-time listener so balance updates immediately on screen
                 unsubscribe = onSnapshot(userRef, async (docSnap) => {
                     if (docSnap.exists()) {
                         if (docSnap.data().role === "admin") {
                             alert("Admins use admin portal.");
                             await signOut(auth); return;
                         }
-                        // Update UI
                         loginSec.classList.add('hidden');
                         userInfo.classList.remove('hidden');
                         custDash.classList.remove('hidden');
                         document.getElementById('customer-balance').innerText = docSnap.data().wallet_balance || 0;
                     } else {
-                        // Create New Account
                         await setDoc(userRef, { email: user.email, role: "customer", wallet_balance: 1, joined: new Date().toISOString() });
                     }
                 });
 
             } else {
-                // Cleanup on logout
                 if (unsubscribe) unsubscribe();
                 loginSec.classList.remove('hidden');
                 custDash.classList.add('hidden');
@@ -190,7 +177,6 @@
             }
         });
 
-        // --- COIN BUYING LOGIC ---
         window.openStore = () => document.getElementById('store-modal').classList.remove('hidden');
         window.closeStore = () => document.getElementById('store-modal').classList.add('hidden');
 
@@ -198,20 +184,16 @@
             const user = auth.currentUser;
             if (!user) return alert("Please login first!");
 
-            // 1. Show fake processing screen (Yahan future me Razorpay/PhonePe API aayegi)
             const processingScreen = document.getElementById('processing-screen');
             processingScreen.classList.remove('hidden');
 
-            // 2. Simulate network delay (Wait 2 seconds)
             setTimeout(async () => {
                 try {
-                    // 3. ACTUAL DATABASE UPDATE: Add coins to user's wallet
                     const userRef = doc(db, "Users", user.uid);
                     await updateDoc(userRef, {
-                        wallet_balance: increment(coinsToBuy) // Ye mathematically secure tarika hai add karne ka
+                        wallet_balance: increment(coinsToBuy)
                     });
 
-                    // 4. Success UI Update
                     processingScreen.classList.add('hidden');
                     closeStore();
                     alert(`✅ Payment Successful! ${coinsToBuy} Coins added to your wallet.`);
@@ -220,7 +202,7 @@
                     processingScreen.classList.add('hidden');
                     alert("❌ Transaction failed. Please try again.");
                 }
-            }, 2000); // 2 second delay for realistic feel
+            }, 2000);
         };
     </script>
 </body>
