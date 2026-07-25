@@ -18,6 +18,7 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
+        // 🔒 SECURE STORE DATA: Hacker isko bahar se edit nahi kar sakta
         const storeProducts = [
             { id: "hotfake_1d", title: "Master Key (1 Day)", cost: 11, duration: "1D", icon: "🎟️" },
             { id: "hotfake_7d", title: "Master Key (1 Week)", cost: 49, duration: "7D", icon: "🔥" },
@@ -81,7 +82,8 @@
                 container.innerHTML += `
                     <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl flex justify-between items-center group hover:border-amber-500/50 transition">
                         <div class="flex items-center gap-3"><span class="text-2xl">${item.icon}</span><div><h4 class="font-bold text-white text-sm">${item.title}</h4><p class="text-xs text-slate-400">Cost: ${item.cost} 🪙</p></div></div>
-                        <button onclick="buyKey('${item.id}', ${item.cost}, '${item.duration}')" class="bg-slate-700 hover:bg-amber-500 hover:text-black text-white text-xs font-bold px-4 py-2 rounded-lg transition">Get Key</button>
+                        <!-- 🛡️ HACK PREVENTED: Sirf ID bheja ja raha hai, Price aur Duration HTML se gayab kar diya -->
+                        <button onclick="buyKey('${item.id}')" class="bg-slate-700 hover:bg-amber-500 hover:text-black text-white text-xs font-bold px-4 py-2 rounded-lg transition">Get Key</button>
                     </div>
                 `;
             });
@@ -99,11 +101,10 @@
                 alert("⚠️ Minimum purchase is 11 Coins (₹11).");
                 return;
             }
-            window.startUPIPayment(amount); // FIX: Added window. for correct scoping
+            window.startUPIPayment(amount); 
         };
 
         window.startUPIPayment = async (amountInr) => {
-            // 🌟 FIX: Getting UID directly from window object
             const uid = window.sessionUid;
             if(!uid) return alert("Please login first to proceed.");
 
@@ -153,10 +154,14 @@
             }
         };
 
-        window.buyKey = async (itemId, cost, duration) => {
-            // 🌟 FIX: Getting UID directly from window object
+        // 🛡️ HACK PREVENTED: Function sirf 'itemId' maang raha hai
+        window.buyKey = async (itemId) => {
             const uid = window.sessionUid;
             if(!uid) return alert("Please login first to proceed.");
+
+            // 🔒 Asli Price list se detail nikal rahe hain, hacker ki HTML detail ignore hogi
+            const item = storeProducts.find(p => p.id === itemId);
+            if (!item) return alert("❌ Error: Invalid Item ID detected!");
 
             const userRef = doc(db, "Users", uid);
             let purchaseSuccess = false;
@@ -166,14 +171,18 @@
                 await runTransaction(db, async (transaction) => {
                     const sfDoc = await transaction.get(userRef);
                     if (!sfDoc.exists()) throw "User not found";
-                    const currentBalance = sfDoc.data().wallet_balance || 0;
-                    if (currentBalance < cost) throw "INSUFFICIENT_FUNDS";
                     
-                    const newBalance = currentBalance - cost;
+                    const currentBalance = sfDoc.data().wallet_balance || 0;
+                    
+                    // 🔒 Check with item.cost from our secure array
+                    if (currentBalance < item.cost) throw "INSUFFICIENT_FUNDS";
+                    
+                    const newBalance = currentBalance - item.cost;
                     transaction.update(userRef, { wallet_balance: newBalance });
                     
+                    // 🔒 Generate key with item.duration from our secure array
                     const randomString = Math.random().toString(36).substring(2, 8).toUpperCase();
-                    generatedKey = `PASS-${duration}-${randomString}`;
+                    generatedKey = `PASS-${item.duration}-${randomString}`;
                     purchaseSuccess = true;
                 });
 
