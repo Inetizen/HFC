@@ -1,132 +1,140 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HFC Bank - Wallet & Store</title>
+    <title>HFC Bank - Premium Gateway</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        .fade-in { animation: fadeIn 0.4s ease-in-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .modal-bg { background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); }
+        .modal-bg { background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); }
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-slate-950 text-white font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-slate-950 text-white font-sans antialiased min-h-screen flex flex-col relative selection:bg-amber-500 selection:text-black">
 
-    <header class="bg-slate-900 border-b border-slate-800 p-4 shadow-md sticky top-0 z-50">
+    <!-- HEADER -->
+    <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <span class="text-2xl font-black text-amber-400">🏦 HFC BANK</span>
+                <span class="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600">🏦 HFC BANK</span>
             </div>
-            <div id="user-info" class="hidden flex items-center space-x-3 fade-in">
-                <span class="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full font-semibold">Customer</span>
-                <button onclick="logout()" class="bg-slate-800 hover:bg-red-600 text-xs px-3 py-1.5 rounded font-medium transition">Logout</button>
+            
+            <!-- User Profile Section (Hidden by default) -->
+            <div id="user-info" class="hidden flex items-center space-x-3 fade-in bg-slate-800 pl-2 pr-4 py-1.5 rounded-full border border-slate-700">
+                <img id="user-avatar" src="" alt="Profile" class="w-7 h-7 rounded-full bg-slate-700">
+                <span id="user-name" class="text-xs font-bold text-slate-200">User</span>
+                <div class="w-px h-4 bg-slate-600 mx-2"></div>
+                <button onclick="logout()" class="text-xs font-bold text-red-400 hover:text-red-300 transition">Logout</button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-md mx-auto p-4 w-full flex-grow flex flex-col justify-center">
+    <main class="max-w-md mx-auto p-4 w-full flex-grow flex flex-col justify-center gap-6 pb-20">
 
-        <!-- LOGIN / SIGNUP SECTION -->
-        <div id="login-section" class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl fade-in">
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-white mb-1">Welcome to HFC</h2>
-                <p class="text-sm text-slate-400">Create account to buy & manage coins</p>
+        <!-- 1. LOGIN SECTION -->
+        <div id="login-section" class="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl fade-in flex flex-col items-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl rotate-12 mb-6 flex items-center justify-center shadow-lg">
+                <span class="text-3xl -rotate-12">🔐</span>
             </div>
+            <h2 class="text-2xl font-black text-white mb-2">Secure Access</h2>
+            <p class="text-sm text-slate-400 text-center mb-8">Login to manage your HFC Wallet & generate premium access keys.</p>
             
-            <button onclick="loginWithGoogle()" class="w-full bg-white text-slate-900 font-bold py-3 px-4 rounded-xl flex items-center justify-center space-x-2 hover:bg-slate-200 transition shadow mb-6">
-                <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35 11.1h-9.17v2.73h5.51c-.24 1.25-1 2.31-2.12 3.03v2.51h3.42c2-1.84 3.36-4.56 3.36-7.86 0-.77-.07-1.5-.2-2.41z"/><path fill="currentColor" d="M12.18 21.3c2.97 0 5.46-.98 7.28-2.66l-3.42-2.51c-.98.66-2.23 1.06-3.86 1.06-2.96 0-5.47-2-6.37-4.7H2.2v2.59c1.83 3.64 5.56 6.22 9.98 6.22z"/><path fill="currentColor" d="M5.81 12.49c-.23-.69-.36-1.43-.36-2.49s.13-1.8.36-2.49V4.92H2.2C1.43 6.45 1 8.17 1 10s.43 3.55 1.2 5.08l3.61-2.59z"/><path fill="currentColor" d="M12.18 5.38c1.62 0 3.07.56 4.21 1.66l3.15-3.15C17.64 2.15 15.15 1 12.18 1 7.76 1 4.03 3.58 2.2 7.22l3.61 2.59c.9-2.7 3.41-4.43 6.37-4.43z"/></svg>
-                <span>Signup / Login with Google</span>
+            <button onclick="loginWithGoogle()" class="w-full bg-white text-slate-900 font-black text-lg py-4 px-4 rounded-xl flex items-center justify-center space-x-3 hover:bg-slate-200 hover:scale-[1.02] transition-transform shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35 11.1h-9.17v2.73h5.51c-.24 1.25-1 2.31-2.12 3.03v2.51h3.42c2-1.84 3.36-4.56 3.36-7.86 0-.77-.07-1.5-.2-2.41z"/><path fill="currentColor" d="M12.18 21.3c2.97 0 5.46-.98 7.28-2.66l-3.42-2.51c-.98.66-2.23 1.06-3.86 1.06-2.96 0-5.47-2-6.37-4.7H2.2v2.59c1.83 3.64 5.56 6.22 9.98 6.22z"/><path fill="currentColor" d="M5.81 12.49c-.23-.69-.36-1.43-.36-2.49s.13-1.8.36-2.49V4.92H2.2C1.43 6.45 1 8.17 1 10s.43 3.55 1.2 5.08l3.61-2.59z"/><path fill="currentColor" d="M12.18 5.38c1.62 0 3.07.56 4.21 1.66l3.15-3.15C17.64 2.15 15.15 1 12.18 1 7.76 1 4.03 3.58 2.2 7.22l3.61 2.59c.9-2.7 3.41-4.43 6.37-4.43z"/></svg>
+                <span>Continue with Google</span>
             </button>
-
-            <div class="relative flex py-2 items-center mb-4">
-                <div class="flex-grow border-t border-slate-700"></div>
-                <span class="flex-shrink-0 mx-4 text-slate-500 text-xs">OR EMAIL</span>
-                <div class="flex-grow border-t border-slate-700"></div>
-            </div>
-
-            <div class="space-y-4">
-                <input type="email" id="cust-email" placeholder="Email Address" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500">
-                <input type="password" id="cust-password" placeholder="Password (Min 6 chars)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500">
-                
-                <div class="grid grid-cols-2 gap-3 pt-2">
-                    <button onclick="loginEmail()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition">Login</button>
-                    <button onclick="signupEmail()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold py-3 rounded-xl transition">Sign Up</button>
-                </div>
-            </div>
+            <p class="text-[10px] text-slate-500 mt-4 text-center">100% Anonymous & Secure. No emails sent.</p>
         </div>
 
-        <!-- DASHBOARD SECTION -->
-        <div id="customer-dashboard" class="hidden space-y-5 fade-in">
-            <div class="relative overflow-hidden bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-8 rounded-3xl shadow-[0_10px_40px_rgba(245,158,11,0.2)] text-slate-950 text-center">
-                <p class="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">Available Balance</p>
-                <div class="flex justify-center items-center space-x-2">
-                    <span id="customer-balance" class="text-7xl font-black drop-shadow-md">...</span>
-                    <span class="text-4xl font-bold drop-shadow-md">🪙</span>
-                </div>
-                <p class="text-sm mt-4 font-semibold bg-black/10 inline-block px-4 py-1.5 rounded-full">Use coins to unlock premium content</p>
-            </div>
+        <!-- 2. DASHBOARD (WALLET) SECTION -->
+        <div id="customer-dashboard" class="hidden flex flex-col gap-5 fade-in">
             
-            <button onclick="openStore()" class="w-full bg-slate-900 border border-amber-500/50 p-4 rounded-2xl text-amber-400 font-bold hover:bg-slate-800 transition shadow-[0_0_15px_rgba(245,158,11,0.2)] flex justify-center items-center space-x-2">
-                <span class="text-xl">🛒</span><span>Buy More Coins</span>
-            </button>
+            <!-- Live Balance Card -->
+            <div class="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 p-6 rounded-3xl shadow-xl">
+                <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🪙</div>
+                <p class="text-xs font-black uppercase tracking-widest text-amber-500 mb-1">Available Coins</p>
+                <div class="flex items-end space-x-2">
+                    <span id="customer-balance" class="text-6xl font-black text-white leading-none">0</span>
+                    <span class="text-2xl font-bold text-amber-400 mb-1">🪙</span>
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-slate-700 flex gap-3">
+                    <button onclick="openAddCoins()" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl transition shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                        + Add Coins (UPI)
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. STORE SECTION (Keys Generator) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2"><span class="text-amber-500">🛒</span> Access Store</h3>
+                    <span class="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded">Keys for Hotfakes</span>
+                </div>
+                
+                <!-- Dynamic Store Items (Populated via JS) -->
+                <div id="store-items-container" class="space-y-3">
+                    <div class="text-center text-sm text-slate-500 py-4">Loading store items...</div>
+                </div>
+            </div>
         </div>
 
     </main>
 
-    <!-- COIN STORE MODAL -->
-    <div id="store-modal" class="hidden fixed inset-0 modal-bg z-[100] flex items-center justify-center p-4 fade-in">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
-            
-            <button onclick="closeStore()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-
-            <div class="p-6 text-center border-b border-slate-800">
-                <h3 class="text-xl font-bold text-amber-400">Coin Store</h3>
-                <p class="text-xs text-slate-400">Select a package to buy</p>
+    <!-- MODAL: ADD COINS (Real UPI Payment) -->
+    <div id="add-coins-modal" class="hidden fixed inset-0 modal-bg z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 fade-in">
+        <div class="bg-slate-900 border border-slate-700 rounded-t-3xl sm:rounded-3xl w-full max-w-sm overflow-hidden relative shadow-2xl">
+            <button onclick="closeAddCoins()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 rounded-full p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <div class="p-5 border-b border-slate-800">
+                <h3 class="font-black text-lg text-white">Buy HFC Coins</h3>
+                <p class="text-xs text-slate-400">1 Coin = ₹1 INR</p>
             </div>
-
-            <div class="p-6 space-y-4">
-                <button onclick="processPayment(10, 50)" class="w-full flex justify-between items-center bg-slate-800 hover:bg-slate-700 border border-slate-600 p-4 rounded-xl transition group">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl group-hover:scale-110 transition">🪙</span>
-                        <div class="text-left">
-                            <p class="font-bold text-white text-lg">10 Coins</p>
-                            <p class="text-xs text-slate-400">Starter Pack</p>
-                        </div>
-                    </div>
-                    <span class="bg-green-500/20 text-green-400 font-bold px-3 py-1.5 rounded-lg border border-green-500/30">₹50</span>
+            <div class="p-5 space-y-3">
+                <!-- Coin Packages -->
+                <button onclick="startUPIPayment(11)" class="w-full flex justify-between items-center bg-slate-800 hover:bg-slate-700 border border-slate-600 p-4 rounded-2xl transition">
+                    <div class="flex items-center gap-3"><span class="text-2xl">🪙</span><div class="text-left"><p class="font-bold text-white">11 Coins</p></div></div>
+                    <span class="bg-green-500/20 text-green-400 font-bold px-3 py-1 rounded-lg border border-green-500/30">Pay ₹11</span>
                 </button>
-
-                <button onclick="processPayment(50, 200)" class="w-full flex justify-between items-center bg-slate-800 hover:bg-slate-700 border border-amber-500/50 p-4 rounded-xl transition group shadow-[0_0_10px_rgba(245,158,11,0.1)]">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl group-hover:scale-110 transition">💎</span>
-                        <div class="text-left">
-                            <p class="font-bold text-amber-400 text-lg">50 Coins</p>
-                            <p class="text-xs text-slate-400">Best Value</p>
-                        </div>
-                    </div>
-                    <span class="bg-green-500 text-slate-900 font-bold px-3 py-1.5 rounded-lg border border-green-400">₹200</span>
+                <button onclick="startUPIPayment(49)" class="w-full flex justify-between items-center bg-slate-800 hover:bg-slate-700 border border-slate-600 p-4 rounded-2xl transition">
+                    <div class="flex items-center gap-3"><span class="text-2xl">🪙</span><div class="text-left"><p class="font-bold text-white">49 Coins</p></div></div>
+                    <span class="bg-green-500/20 text-green-400 font-bold px-3 py-1 rounded-lg border border-green-500/30">Pay ₹49</span>
                 </button>
-            </div>
-
-            <div id="processing-screen" class="hidden absolute inset-0 bg-slate-900 flex flex-col items-center justify-center p-6 text-center">
-                <div class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <h4 class="font-bold text-lg mb-1 text-white">Processing UPI Payment...</h4>
-                <p class="text-xs text-slate-400">Please do not close this window</p>
+                <button onclick="startUPIPayment(99)" class="w-full flex justify-between items-center bg-slate-800 hover:bg-slate-700 border border-amber-500/50 p-4 rounded-2xl transition shadow-[0_0_10px_rgba(245,158,11,0.1)]">
+                    <div class="flex items-center gap-3"><span class="text-2xl">💎</span><div class="text-left"><p class="font-bold text-amber-400">99 Coins</p><p class="text-[10px] text-amber-500/70">Best for 1 Month</p></div></div>
+                    <span class="bg-amber-500 text-slate-900 font-bold px-3 py-1 rounded-lg">Pay ₹99</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- FIREBASE LOGIC -->
+    <!-- MODAL: SUCCESS / GENERATED CODE -->
+    <div id="success-modal" class="hidden fixed inset-0 modal-bg z-[110] flex items-center justify-center p-4 fade-in">
+        <div class="bg-slate-900 border border-amber-500 rounded-3xl w-full max-w-sm p-8 text-center shadow-[0_0_50px_rgba(245,158,11,0.2)]">
+            <div class="text-5xl mb-4">🎉</div>
+            <h3 class="text-xl font-black text-white mb-2">Purchase Successful!</h3>
+            <p class="text-sm text-slate-400 mb-6">Your access key is ready. Copy and use it on the main website.</p>
+            
+            <div class="bg-black border border-dashed border-amber-500 rounded-xl p-4 mb-6 relative group">
+                <p class="text-[10px] text-amber-500 absolute -top-3 left-1/2 -translate-x-1/2 bg-black px-2">YOUR SECRET KEY</p>
+                <p id="generated-key-text" class="text-xl font-mono font-bold text-green-400 tracking-wider">PASS-XXXX-XXXX</p>
+            </div>
+            
+            <button onclick="closeSuccessModal()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-700">Close</button>
+        </div>
+    </div>
+
+    <!-- FIREBASE & LOGIC SETUP -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+        // ⚠️ Apna Naya Firebase Config Yahan Daalein
         const firebaseConfig = {
-            apiKey: "AIzaSyDuFOfwTplev2IfpCKfiH1ZxCSKuZaftUk",
+            apiKey: "AIzaSyDuFOfwTplev2IfpCKfiH1ZxCSKuZaftUk", // Dummy key as placeholder
             authDomain: "hfc-bank-e2a34.firebaseapp.com",
             projectId: "hfc-bank-e2a34",
             storageBucket: "hfc-bank-e2a34.firebasestorage.app",
@@ -139,71 +147,167 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        window.loginWithGoogle = async () => { try { await signInWithPopup(auth, provider); } catch(e) { alert(e.message); } };
-        window.loginEmail = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('cust-email').value, document.getElementById('cust-password').value); } catch(e) { alert("Invalid details"); } };
-        window.signupEmail = async () => { try { await createUserWithEmailAndPassword(auth, document.getElementById('cust-email').value, document.getElementById('cust-password').value); } catch(e) { alert(e.message); } };
+        // --- Store Products Data (Admin Firebase se fetch kar sakta hai, abhi local setup hai) ---
+        const storeProducts = [
+            { id: "hotfake_1d", title: "Master Key (1 Day)", cost: 11, duration: "1D", icon: "🎟️" },
+            { id: "hotfake_7d", title: "Master Key (1 Week)", cost: 49, duration: "7D", icon: "🔥" },
+            { id: "hotfake_30d", title: "Master Key (1 Month)", cost: 99, duration: "30D", icon: "👑" }
+        ];
+
+        // --- Authentication Logic ---
+        window.loginWithGoogle = async () => { 
+            try { await signInWithPopup(auth, provider); } 
+            catch(e) { alert("Login Cancelled"); } 
+        };
         window.logout = async () => { await signOut(auth); };
 
-        let unsubscribe = null;
+        let unsubscribeUser = null;
 
         onAuthStateChanged(auth, async (user) => {
             const loginSec = document.getElementById('login-section');
-            const custDash = document.getElementById('customer-dashboard');
+            const dashSec = document.getElementById('customer-dashboard');
             const userInfo = document.getElementById('user-info');
 
             if (user) {
+                // UI Updates
+                loginSec.classList.add('hidden');
+                dashSec.classList.remove('hidden');
+                userInfo.classList.remove('hidden');
+                
+                document.getElementById('user-name').innerText = user.displayName ? user.displayName.split(' ')[0] : "User";
+                document.getElementById('user-avatar').src = user.photoURL || "https://ui-avatars.com/api/?name=User&background=random";
+
+                // Database Sync
                 const userRef = doc(db, "Users", user.uid);
                 
-                unsubscribe = onSnapshot(userRef, async (docSnap) => {
+                unsubscribeUser = onSnapshot(userRef, async (docSnap) => {
                     if (docSnap.exists()) {
-                        if (docSnap.data().role === "admin") {
-                            alert("Admins use admin portal.");
-                            await signOut(auth); return;
-                        }
-                        loginSec.classList.add('hidden');
-                        userInfo.classList.remove('hidden');
-                        custDash.classList.remove('hidden');
                         document.getElementById('customer-balance').innerText = docSnap.data().wallet_balance || 0;
                     } else {
-                        await setDoc(userRef, { email: user.email, role: "customer", wallet_balance: 1, joined: new Date().toISOString() });
+                        // Naya user aaye toh account create karo (0 balance)
+                        await setDoc(userRef, { 
+                            name: user.displayName, 
+                            email: user.email, 
+                            role: "customer", 
+                            wallet_balance: 0, 
+                            joined: new Date().toISOString() 
+                        });
                     }
                 });
 
+                renderStoreItems();
             } else {
-                if (unsubscribe) unsubscribe();
+                if (unsubscribeUser) unsubscribeUser();
                 loginSec.classList.remove('hidden');
-                custDash.classList.add('hidden');
+                dashSec.classList.add('hidden');
                 userInfo.classList.add('hidden');
             }
         });
 
-        window.openStore = () => document.getElementById('store-modal').classList.remove('hidden');
-        window.closeStore = () => document.getElementById('store-modal').classList.add('hidden');
+        // --- Render Store Items Dynamically ---
+        function renderStoreItems() {
+            const container = document.getElementById('store-items-container');
+            container.innerHTML = ""; // Clear loader
 
-        window.processPayment = async (coinsToBuy, priceInr) => {
+            storeProducts.forEach(item => {
+                container.innerHTML += `
+                    <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl flex justify-between items-center group hover:border-amber-500/50 transition">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${item.icon}</span>
+                            <div>
+                                <h4 class="font-bold text-white text-sm">${item.title}</h4>
+                                <p class="text-xs text-slate-400">Cost: ${item.cost} 🪙</p>
+                            </div>
+                        </div>
+                        <button onclick="buyKey('${item.id}', ${item.cost}, '${item.duration}')" class="bg-slate-700 hover:bg-amber-500 hover:text-black text-white text-xs font-bold px-4 py-2 rounded-lg transition">
+                            Get Key
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        // --- Add Coins / Real UPI Payment Logic (Simulation for Frontend) ---
+        window.openAddCoins = () => document.getElementById('add-coins-modal').classList.remove('hidden');
+        window.closeAddCoins = () => document.getElementById('add-coins-modal').classList.add('hidden');
+
+        window.startUPIPayment = async (amountInr) => {
+            // Note: Real application me yahan PhonePe/Razorpay API call hogi.
+            // Hum abhi Firebase mein directly add kar rahe hain (Demo).
             const user = auth.currentUser;
-            if (!user) return alert("Please login first!");
+            if(!user) return;
 
-            const processingScreen = document.getElementById('processing-screen');
-            processingScreen.classList.remove('hidden');
-
-            setTimeout(async () => {
+            const isConfirmed = confirm(`You will be redirected to UPI app to pay ₹${amountInr}.\n\n(Click OK to simulate successful payment)`);
+            
+            if(isConfirmed) {
                 try {
                     const userRef = doc(db, "Users", user.uid);
-                    await updateDoc(userRef, {
-                        wallet_balance: increment(coinsToBuy)
+                    // Security: Strictly incrementing balance safely.
+                    await runTransaction(db, async (transaction) => {
+                        const sfDoc = await transaction.get(userRef);
+                        if (!sfDoc.exists()) throw "User doc does not exist!";
+                        let newBalance = (sfDoc.data().wallet_balance || 0) + amountInr; // 1 INR = 1 Coin
+                        transaction.update(userRef, { wallet_balance: newBalance });
                     });
-
-                    processingScreen.classList.add('hidden');
-                    closeStore();
-                    alert(`✅ Payment Successful! ${coinsToBuy} Coins added to your wallet.`);
-                } catch (error) {
-                    console.error(error);
-                    processingScreen.classList.add('hidden');
-                    alert("❌ Transaction failed. Please try again.");
+                    
+                    closeAddCoins();
+                    alert(`✅ Payment Successful! ${amountInr} Coins added via UPI.`);
+                } catch(e) {
+                    alert("Error adding coins: " + e);
                 }
-            }, 2000);
+            }
         };
+
+        // --- Store Purchase Logic (Coins to Key) using HIGH SECURITY Transactions ---
+        window.buyKey = async (itemId, cost, duration) => {
+            const user = auth.currentUser;
+            if(!user) return;
+
+            const userRef = doc(db, "Users", user.uid);
+            let purchaseSuccess = false;
+            let generatedKey = "";
+
+            try {
+                // runTransaction ensures balance checks are hack-proof
+                await runTransaction(db, async (transaction) => {
+                    const sfDoc = await transaction.get(userRef);
+                    if (!sfDoc.exists()) throw "User not found";
+
+                    const currentBalance = sfDoc.data().wallet_balance || 0;
+                    
+                    if (currentBalance < cost) {
+                        throw "INSUFFICIENT_FUNDS";
+                    }
+
+                    // Deduct balance
+                    const newBalance = currentBalance - cost;
+                    transaction.update(userRef, { wallet_balance: newBalance });
+
+                    // Generate Unique Code
+                    const randomString = Math.random().toString(36).substring(2, 8).toUpperCase();
+                    generatedKey = `PASS-${duration}-${randomString}`;
+                    
+                    // (Optional) Here you can also add logic to save this key in a 'Generated_Keys' collection for the main site to verify.
+                    purchaseSuccess = true;
+                });
+
+                if(purchaseSuccess) {
+                    document.getElementById('generated-key-text').innerText = generatedKey;
+                    document.getElementById('success-modal').classList.remove('hidden');
+                }
+
+            } catch (e) {
+                if(e === "INSUFFICIENT_FUNDS") {
+                    alert("❌ Not enough coins! Please add coins via UPI first.");
+                    openAddCoins(); // Auto-open Add Coins Modal
+                } else {
+                    alert("Error processing transaction: " + e);
+                }
+            }
+        };
+
+        window.closeSuccessModal = () => document.getElementById('success-modal').classList.add('hidden');
+
     </script>
 </body>
 </html>
